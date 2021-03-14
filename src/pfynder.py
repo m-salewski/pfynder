@@ -98,9 +98,7 @@ def find_fnc(directory, pack_name, fnc_name, verbose=False):
         # Get the module (path) and func_name name
         # NOTE: the parsing is tailored to the outputs of the `find` and `grep`        
         if '/' in l:
-            
-            module = l.split('/')[0]
-            func_name = l.split('def ')[1].split("(")[0]
+            module, func_name = check_meth(directory, l)
             
         else:
 
@@ -135,6 +133,52 @@ def pfynd_fnc(package_to_check, fnc_name):
     pfynder(package_to_check, fnc_name, False)
     
     return None
+
+
+def get_numb(numb, numbs):
+    
+    for n in numbs[::-1]:
+        if numb < n: return n
+    
+    return numbs[-1]
+
+
+def check_meth(dir_to_search, modulename):
+    
+    
+    # NOTE: this is an _ugly_ solution.
+    # This function compares the line numbers to 
+    # identify when a method belongs to a class
+    #
+    # TODO: get methods in the module which match criterion
+    
+    
+    # Get the module name as before
+    module = modulename.split('.py:')[0]
+    func = modulename.split('def ')[1].split("(")[0]
+
+    location = f"{dir_to_search}/{module}"+".py"
+
+    # Check for all class names and their line numbers
+    p1 = Popen(["grep", "-n", "^class", location], stdout=PIPE)
+    output = p1.communicate()[0]                
+
+    classdic = [s.split(':class ') for s in output.decode("utf-8").split('\n') if s != '']
+    classdic = {int(pp[0]):pp[-1].split("(")[0] for pp in classdic}
+    classkeys = sorted(classdic.keys())
+
+    p1 = Popen(["grep", "-n", "^    def", location], stdout=PIPE)
+    output = p1.communicate()[0]                
+
+    methdic = [s.split(':    def ') for s in output.decode("utf-8").split('\n') if func in s]
+    methdic = {int(pp[0]):pp[-1].split("(")[0] for pp in methdic}
+    methkeys = sorted(methdic.keys())
+    #print(methdic)
+
+    module += "."+classdic[[get_numb(kk, classkeys) for kk in methkeys ][0]]
+    module = module.replace('/','.')
+    
+    return module, func
 
 
 def pfynd(package_to_check, item_to_find, ismodule=False, verbose=False):
