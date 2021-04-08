@@ -1,11 +1,17 @@
 # pfynder
 
-pfynder is a simple tool to find function, Object, and method names, usually in a Jupyter notebook.
+## Intro 
+
+pfynder is a simple tool to find function, object, and method names, usually in a Jupyter notebook.
+
+## Dependencies 
 
 It so far relies on a Linux environment, calling `find` and `grep` behind-the-scenes
  and then presents it nicely on the screen.
 
-It supports basic usage:
+## Usage
+
+It supports basic usage for searching a package (here "matplotlib") for a string ("xlim"):
 
 ```python
 >>> from pfynder import pfynd
@@ -22,3 +28,10 @@ matplotlib
 	projections:
 		set_xlim
 ```
+
+## Wishlist
+
+Future development:
+- search _all_ installed packages (also from other venvs)
+- use pure python (e.g. `pkg-resources`)
+- tab-completion (please help!)
